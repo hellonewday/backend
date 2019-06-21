@@ -1,4 +1,4 @@
 # vnesports
 VN eSports Web production code for back-end
-#Hướng dẫn sử dụng
-##hELLO
+##
+# Hướng dẫn sử dụng
