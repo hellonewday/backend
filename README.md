@@ -10,8 +10,10 @@ npm install
 ```javascript
 npm start
 ```
-Chạy MongoDB Compass Community, server host at: mongodb://localhost:27017
-Server host at: http://localhost:8888
+Chạy MongoDB Compass Community, mongodb://localhost:27017
+
+Nodejs server host at: http://localhost:8888
+
 ##
 # Các route đã có
 1. User
