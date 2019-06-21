@@ -1,15 +1,12 @@
 # vnesports
 VN eSports Web production code for back-end
 # Hướng dẫn sử dụng
-B1: 
 ```javascript
-git clone repository
+git clone https://github.com/hellonewday/vnesports
 ```
-B2: 
 ```nodejs
 npm install
 ```
-B3: 
 ```javascript
 npm start
 ```
