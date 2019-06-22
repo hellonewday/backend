@@ -10,7 +10,6 @@ npm install
 ```javascript
 npm start
 ```
-Chạy MongoDB Compass Community, mongodb://localhost:27017
 
 Nodejs server host at: http://localhost:8888
 
