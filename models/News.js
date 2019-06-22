@@ -13,7 +13,7 @@ var News = new Schema({
   },
   subtitle: {
     type: String,
-    required: false,
+    required: true,
     trim: true
   },
   content: {

@@ -1,17 +1,17 @@
 // API for user posts
-const cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const router = require("express").Router();
 const isProtected = require("../controllers/validation");
 const Forum = require("../models/Forum");
-const Comment = require("../models/Forum_comment");
+const Comment = require("../models/Forum.comment");
 const moment = require("moment");
 
 moment.locale("vi");
 cloudinary.config({
-  cloud_name: "vn-esports",
-  api_key: "996178356223912",
-  api_secret: "rC8_6QyIf1DIbokVgSYe0VLsJwQ"
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.API_KEY,
+  api_secret: process.env.API_SECRET
 });
 
 const storage = multer.diskStorage({

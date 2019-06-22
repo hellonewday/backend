@@ -1,9 +1,9 @@
-const cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const router = require("express").Router();
 const isProtected = require("../controllers/validation");
 const News = require("../models/News");
-const Comment = require("../models/News_comment");
+const Comment = require("../models/News.comment");
 const moment = require("moment");
 
 moment.locale("vi");
