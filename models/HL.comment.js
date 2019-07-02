@@ -6,6 +6,10 @@ const HL_comment = new Schema({
     type: Schema.Types.ObjectId,
     ref: "User"
   },
+  highlight: {
+    type: Schema.Types.ObjectId,
+    ref: 'Highlight'
+  },
   content: {
     type: String,
     required: true

@@ -127,6 +127,7 @@ router.get("/", (req, res) => {
                 comment_counts: item.comments.length,
                 comments_details: item.comments.map(cmt => {
                   return {
+                    comment_id: cmt._id,
                     comment_author: cmt.author.nickname,
                     comment_avatar: cmt.author.avatarUrl,
                     comment_created: moment(cmt.created).calendar(),
@@ -162,7 +163,21 @@ router.get("/:newsId", (req, res) => {
     .exec()
     .then(doc => {
       res.status(200).json({
-        data: doc,
+        data: {
+          id: doc._id,
+          title: doc.title,
+          subtitle: doc.subtitle,
+          content: doc.content,
+          created: moment(doc.created).format("LLL"),
+          likes: doc.likes,
+          shares: doc.shared,
+          image: doc.imageUrl,
+          author_name: doc.author.nickname,
+          comments: doc.comments,
+          comment_counts: doc.comments.length,
+          author_avatar: doc.author.avatarUrl,
+          author_id: doc.author._id
+        },
         method: req.method
       });
     })
@@ -188,7 +203,7 @@ router.post("/create", upload.single("image"), isProtected, (req, res) => {
           tags: req.body.tags,
           imageUrl: doc.secure_url
         });
-        news.save().then(item => {
+        news.save().then(async item => {
           res.status(201).json({
             data: item
           });
@@ -207,9 +222,32 @@ router.post("/create", upload.single("image"), isProtected, (req, res) => {
   }
 });
 
-router.patch("/:newsId");
+router.patch("/:newsId", isProtected, (req, res) => {
+  News.updateOne({ _id: req.params.newsId }, req.body)
+    .exec()
+    .then(response => {
+      res.status(200).json({
+        data: response
+      });
+    })
+    .catch(err => {
+      res.status(400).json({ error: err });
+    });
+});
 
-router.delete("/:newsId");
+router.delete("/:newsId", isProtected, async (req, res) => {
+  let existNews = await News.findById({ _id: req.params.newsId });
+  if (existNews) {
+    News.deleteOne({ _id: req.params.newsId })
+      .exec()
+      .then(response => {
+        res.status(200).json({ data: response });
+      })
+      .catch(err => res.status(400).json({ error: err }));
+  } else {
+    res.status(404).json({ message: "Not found" });
+  }
+});
 
 router.post("/:newsId/comment", isProtected, async (req, res) => {
   // isProtected: ensure that user comment this post is authorizedId user, not other user!
@@ -242,4 +280,73 @@ router.post("/:newsId/comment", isProtected, async (req, res) => {
     });
   }
 });
+
+router.post("/:forumId/comment", isProtected, async (req, res) => {
+  let existForum = await Forum.findOne({ _id: req.params.forumId });
+  if (existForum) {
+    authorized_id = req.userData._id;
+    let comment = new Comment({
+      author: authorized_id,
+      forum: req.params.forumId,
+      content: req.body.content
+    });
+    comment.save().then(async doc => {
+      res.status(201).json({
+        response: doc
+      });
+      existForum.comments.push(doc._id);
+      await existForum.save();
+    });
+  } else {
+    res.status(400).json({
+      message: "Forum post has been deleted or not found"
+    });
+  }
+});
+router.patch("/:commentId", isProtected, async (req, res) => {
+  let commentExist = await Comment.findOne({ _id: req.params.commentId });
+  if (commentExist) {
+    Comment.updateOne(
+      { _id: req.params.commentId, author: req.userData._id },
+      req.body
+    )
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          error: err
+        });
+      });
+  } else {
+    res
+      .status(404)
+      .json({ message: "Comment has been deleted or not found !" });
+  }
+});
+router.delete("/commentId", isProtected, async (req, res) => {
+  let commentExist = await Comment.findOne({ _id: req.params.commentId });
+  if (commentExist) {
+    Comment.deleteOne({ _id: req.params.commentId, author: req.userData._id })
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          error: err
+        });
+      });
+  } else {
+    res.status(404).json({
+      message: "Comment has been deleted or not found !"
+    });
+  }
+});
+
 module.exports = router;

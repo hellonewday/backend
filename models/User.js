@@ -25,6 +25,38 @@ var User = new Schema({
   created: {
     type: Date,
     default: Date.now()
+  },
+  posts: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Forum"
+    }
+  ],
+  highlights: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Highlight"
+    }
+  ],
+  teams: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Team"
+    }
+  ],
+  club: {
+    type: Schema.Types.ObjectId,
+    ref: "Club"
+  },
+  tournaments: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Tournament"
+    }
+  ],
+  relationship: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
   }
 });
 module.exports = mongoose.model("User", User);

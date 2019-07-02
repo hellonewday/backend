@@ -9,6 +9,7 @@ const ForumRoute = require("./routes/forums");
 const HLroute = require("./routes/highlights");
 const dotenv = require("dotenv");
 dotenv.config();
+
 mongoose
   .connect(
     `mongodb+srv://${process.env.DB_USERNAME}:${
@@ -18,8 +19,14 @@ mongoose
       useNewUrlParser: true
     }
   )
-  .then(() => console.log("Connect to database"))
-  .catch(err => console.log("Unable to connect to database" + err));
+  .then(() => {
+    console.log("Connect to database!");
+  });
+
+// mongoose
+//   .connect("mongodb://localhost:27017/main", { useNewUrlParser: true })
+//   .then(() => console.log("Connect to database"))
+//   .catch(err => console.log("Unable to connect to database" + err));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

@@ -15,6 +15,7 @@ var Forum = new Schema({
     type: String,
     required: true
   },
+  genre: String,
   created: {
     type: Date,
     default: Date.now()
@@ -36,6 +37,10 @@ var Forum = new Schema({
       type: Schema.Types.ObjectId,
       ref: "Forum_comment"
     }
-  ]
+  ],
+  isPublished: {
+    type: Boolean,
+    default: false
+  }
 });
 module.exports = mongoose.model("Forum", Forum);

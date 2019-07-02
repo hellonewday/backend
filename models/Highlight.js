@@ -11,6 +11,10 @@ const HL = new Schema({
     trim: true
   },
   mediaUrl: String,
+  genre: {
+    type: String,
+    required: true
+  },
   description: String,
   likes: {
     type: Number,
@@ -29,6 +33,10 @@ const HL = new Schema({
       type: Schema.Types.ObjectId,
       ref: "HL_comment"
     }
-  ]
+  ],
+  isPublished: {
+    type: Boolean,
+    default: false
+  }
 });
 module.exports = mongoose.model("Highlight", HL);

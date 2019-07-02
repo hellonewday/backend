@@ -5,6 +5,7 @@ const router = require("express").Router();
 const isProtected = require("../controllers/validation");
 const Forum = require("../models/Forum");
 const Comment = require("../models/Forum.comment");
+const User = require("../models/User");
 const moment = require("moment");
 
 moment.locale("vi");
@@ -126,6 +127,7 @@ router.get("/", (req, res) => {
                 comment_counts: item.comments.length,
                 comments_details: item.comments.map(cmt => {
                   return {
+                    comment_id: cmt._id,
                     comment_author: cmt.author.nickname,
                     comment_avatar: cmt.author.avatarUrl,
                     comment_created: moment(cmt.created).calendar(),
@@ -161,7 +163,20 @@ router.get("/:forumId", (req, res) => {
     .exec()
     .then(doc => {
       res.status(200).json({
-        data: doc,
+        data: {
+          id: doc._id,
+          title: doc.title,
+          content: doc.content,
+          created: moment(doc.created).format("LLL"),
+          likes: doc.likes,
+          shares: doc.shared,
+          comments: doc.comments,
+          comment_counts: doc.comments.length,
+          image: doc.imageUrl,
+          author_name: doc.author.nickname,
+          author_avatar: doc.author.avatarUrl,
+          author_id: doc.author._id
+        },
         method: req.method
       });
     })
@@ -173,20 +188,24 @@ router.get("/:forumId", (req, res) => {
     });
 });
 
-router.post("/create", upload.single("image"), isProtected, (req, res) => {  
+router.post("/create", upload.single("image"), isProtected, (req, res) => {
   cloudinary.uploader
     .upload(req.file.path, { resource_type: "image" })
     .then(doc => {
       const forum = new Forum({
+        genre: req.body.genre,
         author: req.userData._id,
         title: req.body.title,
         content: req.body.content,
         imageUrl: doc.secure_url
       });
-      forum.save().then(item => {
+      forum.save().then(async item => {
+        let aUser = await User.findOne({ _id: req.userData._id });
         res.status(201).json({
           data: item
         });
+        aUser.posts.push(item._id);
+        await aUser.save();
       });
     })
     .catch(err => {
@@ -197,12 +216,51 @@ router.post("/create", upload.single("image"), isProtected, (req, res) => {
     });
 });
 
-router.patch("/:forumId");
+router.patch("/:forumId", isProtected, async (req, res) => {
+  let existForum = await Forum.findOne({ _id: req.params.forumId });
+  if (existForum) {
+    Forum.updateOne({ _id: req.params.forumId }, req.body)
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          error: err
+        });
+      });
+  } else {
+    res.status(404).json({
+      message: "post has been deleted or not found!"
+    });
+  }
+});
 
-router.delete("/:forumId");
+router.delete("/:forumId", isProtected, async (req, res) => {
+  let existForum = await Forum.findOne({ _id: req.params.forumId });
+  if (existForum) {
+    Forum.deleteOne({ _id: req.params.forumId })
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          error: err
+        });
+      });
+  } else {
+    res.status(404).json({
+      message: "Post has been deleted or not found"
+    });
+  }
+});
 
 router.post("/:forumId/comment", isProtected, async (req, res) => {
-  // isProtected: ensure that user comment this post is authorizedId user, not other user!
   let existForum = await Forum.findOne({ _id: req.params.forumId });
   if (existForum) {
     authorized_id = req.userData._id;
@@ -211,25 +269,64 @@ router.post("/:forumId/comment", isProtected, async (req, res) => {
       forum: req.params.forumId,
       content: req.body.content
     });
-    comment
-      .save()
-      .then(async doc => {
-        res.status(201).json({
-          response: doc
-        });
-        existForum.comments.push(doc._id);
-        await existForum.save();
-      })
-      .catch(err => {
-        res.status(400).json({
-          message: "Cannot send this comment to the post",
-          error: err
-        });
+    comment.save().then(async doc => {
+      res.status(201).json({
+        response: doc
       });
+      existForum.comments.push(doc._id);
+      await existForum.save();
+    });
   } else {
     res.status(400).json({
       message: "Forum post has been deleted or not found"
     });
   }
 });
+router.patch("/comments/:commentId", isProtected, async (req, res) => {
+  let commentExist = await Comment.findOne({ _id: req.params.commentId });
+  if (commentExist) {
+    Comment.updateOne(
+      { _id: req.params.commentId, author: req.userData._id },
+      req.body
+    )
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          error: err
+        });
+      });
+  } else {
+    res
+      .status(404)
+      .json({ message: "Comment has been deleted or not found !" });
+  }
+});
+router.delete("/comments/:commentId", isProtected, async (req, res) => {
+  let commentExist = await Comment.findOne({ _id: req.params.commentId });
+  if (commentExist) {
+    Comment.deleteOne({ _id: req.params.commentId, author: req.userData._id })
+      .exec()
+      .then(response => {
+        res.status(200).json({
+          data: response
+        });
+      })
+      .catch(err => {
+        res.status(400).json({
+          message: 'Error',
+          error: err
+        });
+      });
+  } else {
+    res.status(404).json({
+      message: "Comment has been deleted or not found !"
+    });
+  }
+});
+
 module.exports = router;
