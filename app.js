@@ -7,6 +7,8 @@ const UserRoute = require("./routes/users");
 const NewsRoute = require("./routes/news");
 const ForumRoute = require("./routes/forums");
 const HLroute = require("./routes/highlights");
+const clubRoute = require("./routes/club");
+const chatRoute = require("./routes/chats");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -38,4 +40,6 @@ app.use("/uploads", express.static("uploads"));
 app.use("/news", NewsRoute);
 app.use("/forums", ForumRoute);
 app.use("/highlights", HLroute);
+app.use("/clubs", clubRoute);
+app.use("/chatrooms", chatRoute);
 module.exports = app;
