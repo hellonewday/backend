@@ -11,6 +11,16 @@ npm install
 npm start
 ```
 
+Nếu chạy npm start mà xuất hiện lỗi "internal/modules/cjs/loader.js:718" thì 
+```javascript
+npm install bcrypt 
+```
+rồi sau đó chạy 
+```nodejs
+npm start
+``` 
+như bình thường
+
 Nodejs server host at: http://localhost:8888
 
 ##
@@ -29,7 +39,9 @@ Nodejs server host at: http://localhost:8888
    + email
    + password
    
-  Chú ý: /users/login trả về 1 token và 1 message. Dùng token đó để sử dụng trong các tính năng ở phần body.
+  Chú ý: 
+   /users/login trả về 1 token và 1 message. Dùng token đó để sử dụng trong các tính năng ở phần body.
+ 
   
  - PATCH /users/:id
  2. News - tin tức chính thống
