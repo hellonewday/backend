@@ -4,7 +4,7 @@ const multer = require("multer");
 const router = require("express").Router();
 const isProtected = require("../controllers/validation");
 const Forum = require("../models/Forum");
-const Comment = require("../models/Forum.comment");
+const Comment = require("../models/Comment");
 const User = require("../models/User");
 const moment = require("moment");
 
@@ -120,8 +120,8 @@ router.get("/", (req, res) => {
               created: moment(item.created).format("LLLL"),
               created_at: moment(item.created).calendar(),
               interaction: {
-                likes: item.likes,
-                shares: item.shared
+                likes: item.likes.length,
+                shares: item.shared.length
               },
               comments: {
                 comment_counts: item.comments.length,
@@ -219,6 +219,8 @@ router.post("/create", upload.single("image"), isProtected, (req, res) => {
 router.patch("/:forumId", isProtected, async (req, res) => {
   let existForum = await Forum.findOne({ _id: req.params.forumId });
   if (existForum) {
+    
+    // Handle normal update
     Forum.updateOne({ _id: req.params.forumId }, req.body)
       .exec()
       .then(response => {
@@ -266,7 +268,8 @@ router.post("/:forumId/comment", isProtected, async (req, res) => {
     authorized_id = req.userData._id;
     let comment = new Comment({
       author: authorized_id,
-      forum: req.params.forumId,
+      targetType: "Forum",
+      target: req.params.forumId,
       content: req.body.content
     });
     comment.save().then(async doc => {
@@ -318,7 +321,7 @@ router.delete("/comments/:commentId", isProtected, async (req, res) => {
       })
       .catch(err => {
         res.status(400).json({
-          message: 'Error',
+          message: "Error",
           error: err
         });
       });

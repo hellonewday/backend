@@ -3,7 +3,7 @@ const multer = require("multer");
 const router = require("express").Router();
 const isProtected = require("../controllers/validation");
 const News = require("../models/News");
-const Comment = require("../models/News.comment");
+const Comment = require("../models/Comment");
 const moment = require("moment");
 
 moment.locale("vi");
@@ -281,25 +281,26 @@ router.post("/:newsId/comment", isProtected, async (req, res) => {
   }
 });
 
-router.post("/:forumId/comment", isProtected, async (req, res) => {
-  let existForum = await Forum.findOne({ _id: req.params.forumId });
-  if (existForum) {
+router.post("/:newsId/comment", isProtected, async (req, res) => {
+  let existNews = await News.findOne({ _id: req.params.newsId });
+  if (existNews) {
     authorized_id = req.userData._id;
     let comment = new Comment({
       author: authorized_id,
-      forum: req.params.forumId,
+      targetType: 'News',
+      target: req.params.newsId,
       content: req.body.content
     });
     comment.save().then(async doc => {
       res.status(201).json({
         response: doc
       });
-      existForum.comments.push(doc._id);
-      await existForum.save();
+      existNews.comments.push(doc._id);
+      await existNews.save();
     });
   } else {
     res.status(400).json({
-      message: "Forum post has been deleted or not found"
+      message: "News post has been deleted or not found"
     });
   }
 });

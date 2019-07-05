@@ -63,7 +63,7 @@ router.get("/", (req, res) => {
               };
             }),
             quantity: item.quantity,
-            created_date: moment(item.created).format("LL"),
+            created_date: moment(item.created_at).format("LLLL"),
             game: item.genre,
             chatroom: {
               name: item.chatroom.title,
@@ -177,7 +177,10 @@ router.delete("/clubId", isProtected, (req, res) => {
 router.post("/:clubId/chat", isProtected, (req, res) => {
   let data = new Chatroom({
     title: req.body.title,
-    host: req.userData._id
+    description: req.body.description,
+    host: req.userData._id,
+    targetType: "Club",
+    target: req.params.clubId
   });
   data
     .save()
