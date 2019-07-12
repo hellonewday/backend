@@ -149,6 +149,14 @@ router.get("/", (req, res) => {
   }
 });
 
+router.get("/favorites", (req, res) => {
+  News.find()
+    .sort({})
+    .exec()
+    .then()
+    .catch();
+});
+
 router.get("/:newsId", (req, res) => {
   News.findOne({ _id: req.params.newsId })
     .populate("author", "nickname avatarUrl")
@@ -287,7 +295,7 @@ router.post("/:newsId/comment", isProtected, async (req, res) => {
     authorized_id = req.userData._id;
     let comment = new Comment({
       author: authorized_id,
-      targetType: 'News',
+      targetType: "News",
       target: req.params.newsId,
       content: req.body.content
     });

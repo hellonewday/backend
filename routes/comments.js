@@ -1,6 +1,6 @@
 const Comment = require("../models/Comment");
 const router = require("express").Router();
-
+const isProtected = require("../controllers/validation");
 router.get("/", (req, res) => {
   Comment.find()
     .exec()
@@ -42,6 +42,11 @@ router.patch("/commentId", isProtected, async (req, res) => {
 });
 
 router.delete("/commentId", isProtected, (req, res) => {
-  
+  Comment.deleteOne({
+    _id: req.params.commentId
+  })
+    .exec()
+    .then(response => res.status(200).json({ response }))
+    .catch(error => res.status(400).json({ error }));
 });
 module.exports = router;

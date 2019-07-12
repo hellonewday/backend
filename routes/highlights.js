@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const HL = require("../models/Highlight");
+const User = require('../models/User');
 const isProtected = require("../controllers/validation");
 const Comment = require("../models/Comment");
 const multer = require("multer");
@@ -111,19 +112,14 @@ router.post("/create", upload.single("video"), isProtected, (req, res) => {
         mediaUrl: doc.secure_url,
         genre: req.body.genre
       });
-      data
-        .save()
-        .then(response => {
-          res.status(201).json({
-            data: response
-          });
-        })
-        .catch(err => {
-          res.status(301).json({
-            message: "Failed to upload highlight",
-            error: err
-          });
+      data.save().then(async item => {
+        let aUser = await User.findOne({ _id: req.userData._id });
+        res.status(201).json({
+          data: item
         });
+        aUser.highlights.push(item._id);
+        await aUser.save();
+      });
     })
     .catch(err => {
       res.status(400).json({

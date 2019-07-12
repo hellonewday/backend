@@ -1,4 +1,3 @@
-// API for user posts
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
 const router = require("express").Router();
@@ -42,33 +41,7 @@ const upload = multer({
 });
 
 router.get("/", (req, res) => {
-  if (req.query.sortByLikes !== undefined) {
-    Forum.find()
-      .sort({ likes: 1 })
-      .limit(parseInt(req.query.sortByLikes))
-      .populate("author", "nickname avatarUrl")
-      .populate({
-        path: "comments",
-        select: "author created content likes",
-        populate: {
-          path: "author",
-          select: "nickname avatarUrl"
-        }
-      })
-      .exec()
-      .then(doc =>
-        res.status(200).json({
-          counts: doc.length,
-          data: doc
-        })
-      )
-      .catch(err => {
-        res.status(400).json({
-          message: "Error",
-          error: err
-        });
-      });
-  } else if (req.query.searchBox !== undefined) {
+if (req.query.searchBox !== undefined) {
     Forum.find({ title: { $regex: req.query.searchBox, $options: "i" } }) //Refund => req.query.searchBox
       .populate("author", "nickname avatarUrl")
       .populate({
@@ -219,8 +192,8 @@ router.post("/create", upload.single("image"), isProtected, (req, res) => {
 router.patch("/:forumId", isProtected, async (req, res) => {
   let existForum = await Forum.findOne({ _id: req.params.forumId });
   if (existForum) {
-    
     // Handle normal update
+    
     Forum.updateOne({ _id: req.params.forumId }, req.body)
       .exec()
       .then(response => {
@@ -285,6 +258,7 @@ router.post("/:forumId/comment", isProtected, async (req, res) => {
     });
   }
 });
+
 router.patch("/comments/:commentId", isProtected, async (req, res) => {
   let commentExist = await Comment.findOne({ _id: req.params.commentId });
   if (commentExist) {
@@ -294,14 +268,10 @@ router.patch("/comments/:commentId", isProtected, async (req, res) => {
     )
       .exec()
       .then(response => {
-        res.status(200).json({
-          data: response
-        });
+        res.status(200).json({ response });
       })
       .catch(err => {
-        res.status(400).json({
-          error: err
-        });
+        res.status(400).json({ err });
       });
   } else {
     res
@@ -309,6 +279,7 @@ router.patch("/comments/:commentId", isProtected, async (req, res) => {
       .json({ message: "Comment has been deleted or not found !" });
   }
 });
+
 router.delete("/comments/:commentId", isProtected, async (req, res) => {
   let commentExist = await Comment.findOne({ _id: req.params.commentId });
   if (commentExist) {
